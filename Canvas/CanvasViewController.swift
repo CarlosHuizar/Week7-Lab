@@ -23,6 +23,7 @@ class CanvasViewController: UIViewController {
         trayDownOffset = 210
         trayUp = trayView.center // The initial position of the tray
         trayDown = CGPoint(x: trayView.center.x ,y: trayView.center.y + trayDownOffset)
+        
 
         // Do any additional setup after loading the view.
     }
@@ -80,6 +81,11 @@ class CanvasViewController: UIViewController {
             newlyCreatedFace.center.y += trayView.frame.origin.y
             newlyCreatedFaceOriginalCenter = newlyCreatedFace.center
             
+            let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(didPan(sender:)))
+            
+            newlyCreatedFace.isUserInteractionEnabled = true
+            newlyCreatedFace.addGestureRecognizer(panGestureRecognizer)
+            
         }
         else if sender.state == .changed
         {
@@ -87,12 +93,37 @@ class CanvasViewController: UIViewController {
             newlyCreatedFace.center = CGPoint(x: newlyCreatedFaceOriginalCenter.x + translation.x, y: newlyCreatedFaceOriginalCenter.y + translation.y)
             
         }
-        else if sender.state == .ended
-        {
-            
-        }
     }
     
+    @IBAction func didPan(sender: UIPanGestureRecognizer) {
+        let location = sender.location(in: view)
+        let velocity = sender.velocity(in: view)
+        let translation = sender.translation(in: view)
+        
+        if sender.state == .began
+        {
+            print("Gesture began")
+            newlyCreatedFace = sender.view as! UIImageView // to get the face that we panned on.
+            newlyCreatedFaceOriginalCenter = newlyCreatedFace.center // so we can offset by translation later.
+            let transform = newlyCreatedFace.transform
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                // Animate view properties here...
+                self.newlyCreatedFace.transform = self.newlyCreatedFace.transform.scaledBy(x: 1.7, y: 1.7)
+            })
+        }
+        else if sender.state == .changed
+        {
+            print("Gesture is changing")
+            newlyCreatedFace.center = CGPoint(x: newlyCreatedFaceOriginalCenter.x + translation.x, y: newlyCreatedFaceOriginalCenter.y + translation.y)
+        }
+        else if sender.state == .ended
+        {
+            UIView.animate(withDuration: 0.0, animations: {
+                self.newlyCreatedFace.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
+            })
+        }
+    }
 
     /*
     // MARK: - Navigation
